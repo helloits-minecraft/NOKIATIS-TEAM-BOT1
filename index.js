@@ -1,3 +1,5 @@
+const bioHandler = require('./bioHandler'); // Bio storage helper
+
 const { Client, GatewayIntentBits } = require('discord.js');
 
 const client = new Client({
@@ -40,6 +42,33 @@ client.once('ready', () => {
      * STREAMING (you need to add a twitch.tv url next to type like this:   { type: "STREAMING", url: "https://twitch.tv/twitch_username_here"} )
      * PLAYING (default)
     */
+});
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+
+    if (message.content.startsWith('!setbio')) {
+        const bio = message.content.replace('!setbio ', '');
+        bioHandler.setBio(message.author.id, bio);
+        message.reply(`Bio set: "${bio}".`);
+    }
+});
+client.on('presenceUpdate', async (oldPresence, newPresence) => {
+    if (!newPresence || !newPresence.member) return;
+
+    const userId = newPresence.member.id;
+    const userBio = bioHandler.getBio(userId); // Retrieve stored bio
+    const requiredStatus = "online"; // Change this to your required status
+    const requiredBio = "Verified User"; // Change this to required bio content
+
+    const roleToAssign = newPresence.guild.roles.cache.find(r => r.name === "SpecialRole");
+
+    if (newPresence.status === requiredStatus && userBio === requiredBio) {
+        await newPresence.member.roles.add(roleToAssign);
+        console.log(`✅ Assigned ${roleToAssign.name} to ${newPresence.member.user.tag}`);
+    } else {
+        await newPresence.member.roles.remove(roleToAssign);
+        console.log(`❌ Removed ${roleToAssign.name} from ${newPresence.member.user.tag}`);
+    }
 });
 
 client.on("interactionCreate", async (interaction) => {
