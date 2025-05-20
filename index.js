@@ -9,7 +9,6 @@ const fs = require("fs");
 const generated = new Set();
 const server = require('./server.js');
 const commands = require('./deploy-commands.js')
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
 client.commands = new Collection();
 const commandFiles = fs
