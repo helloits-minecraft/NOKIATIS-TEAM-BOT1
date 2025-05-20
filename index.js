@@ -1,4 +1,14 @@
-const Discord = require("discord.js");
+const { Client, GatewayIntentBits } = require('discord.js');
+
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences, // Enables status tracking
+        GatewayIntentBits.GuildMessages
+    ]
+});
+
 const { Client, Intents, Permissions, Collection } = require("discord.js");
 const { Routes } = require("discord-api-types/v9");
 const { clientId, guildId, token } = require("./config.json");
