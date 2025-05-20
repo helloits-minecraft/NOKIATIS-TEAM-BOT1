@@ -1,26 +1,13 @@
-const { Client, Intents, Permissions, Collection } = require("discord.js");
-const bioHandler = require('./bioHandler'); // Bio storage help
-
-
-const { Routes } = require("discord-api-types/v9");
-const { clientId, guildId, token } = require("./config.json");
-const config = require('./config.json');
-const fs = require("fs");
-const generated = new Set();
-const server = require('./server.js');
-const commands = require('./deploy-commands.js')
 const { Client, GatewayIntentBits, Permissions, Collection } = require("discord.js");
 const bioHandler = require('./bioHandler'); // Bio storage help
-
 const { Routes } = require("discord-api-types/v9");
 const { clientId, guildId, token } = require("./config.json");
 const config = require('./config.json');
 const fs = require("fs");
-const generated = new Set();
 const server = require('./server.js');
 const commands = require('./deploy-commands.js');
 
-// ✅ Move `client` declaration ABOVE `client.commands`
+// ✅ Initialize client
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -30,53 +17,35 @@ const client = new Client({
     ]
 });
 
-client.commands = new Collection(); // ✅ Now it's correctly placed
-
-const commandFiles = fs
-    .readdirSync("./commands")
-    .filter((file) => file.endsWith(".js"));
-
+// ✅ Commands Collection (remove duplicate)
+client.commands = new Collection();
+const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
 for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
     client.commands.set(command.data.name, command);
 }
 
-client.commands = new Collection();
-const commandFiles = fs
-  .readdirSync("./commands")
-  .filter((file) => file.endsWith(".js"));
-
-for (const file of commandFiles) {
-  const command = require(`./commands/${file}`);
-  client.commands.set(command.data.name, command);
-}
-
+// ✅ Bot Ready Event
 client.once('ready', () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity(`${config.status}`, { type: "WATCHING" }); // Set the bot's activity status
-    /* You can change the activity type to:
-     * LISTENING
-     * WATCHING
-     * COMPETING
-     * STREAMING (you need to add a twitch.tv url next to type like this:   { type: "STREAMING", url: "https://twitch.tv/twitch_username_here"} )
-     * PLAYING (default)
-    */
+    console.log(`Logged in as ${client.user.tag}!`);
+    client.user.setActivity(`${config.status}`, { type: "WATCHING" });
 });
+
+// ✅ Message Command: Set Bio
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
-
     if (message.content.startsWith('!setbio')) {
         const bio = message.content.replace('!setbio ', '');
         bioHandler.setBio(message.author.id, bio);
         message.reply(`Bio set: "${bio}".`);
     }
 });
+
+// ✅ Presence Update: Assign/Remove Role Based on Bio & Status
 client.on('presenceUpdate', async (oldPresence, newPresence) => {
     if (!newPresence || !newPresence.member) return;
-
     const userId = newPresence.member.id;
-    const requiredStatus = "online"; // Change this to your required status
-
+    const requiredStatus = "online";
     const roleToAssign = newPresence.guild.roles.cache.find(r => r.name === "SpecialRole");
 
     if (newPresence.status === requiredStatus && bioHandler.isBioValid(userId)) {
@@ -88,19 +57,17 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     }
 });
 
+// ✅ Command Interaction Handling
 client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isCommand()) return;
-
-  const command = client.commands.get(interaction.commandName);
-
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-  }
+    if (!interaction.isCommand()) return;
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+    }
 });
 
-client.login(process.env.token || token);
-
+// ✅ Start bot
+client.login(process.env.TOKEN || config.token);
