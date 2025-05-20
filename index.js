@@ -1,15 +1,7 @@
+const { Client, Intents, Permissions, Collection } = require("discord.js");
 const bioHandler = require('./bioHandler'); // Bio storage help
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildPresences, // Enables status tracking
-        GatewayIntentBits.GuildMessages
-    ]
-});
 
-const { Client, Intents, Permissions, Collection } = require("discord.js");
 const { Routes } = require("discord-api-types/v9");
 const { clientId, guildId, token } = require("./config.json");
 const config = require('./config.json');
@@ -31,7 +23,6 @@ for (const file of commandFiles) {
 
 client.once('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.
   client.user.setActivity(`${config.status}`, { type: "WATCHING" }); // Set the bot's activity status
     /* You can change the activity type to:
      * LISTENING
