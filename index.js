@@ -9,6 +9,37 @@ const fs = require("fs");
 const generated = new Set();
 const server = require('./server.js');
 const commands = require('./deploy-commands.js')
+const { Client, GatewayIntentBits, Permissions, Collection } = require("discord.js");
+const bioHandler = require('./bioHandler'); // Bio storage help
+
+const { Routes } = require("discord-api-types/v9");
+const { clientId, guildId, token } = require("./config.json");
+const config = require('./config.json');
+const fs = require("fs");
+const generated = new Set();
+const server = require('./server.js');
+const commands = require('./deploy-commands.js');
+
+// ✅ Move `client` declaration ABOVE `client.commands`
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildMessages
+    ]
+});
+
+client.commands = new Collection(); // ✅ Now it's correctly placed
+
+const commandFiles = fs
+    .readdirSync("./commands")
+    .filter((file) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.data.name, command);
+}
 
 client.commands = new Collection();
 const commandFiles = fs
