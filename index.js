@@ -54,13 +54,11 @@ client.on('presenceUpdate', async (oldPresence, newPresence) => {
     if (!newPresence || !newPresence.member) return;
 
     const userId = newPresence.member.id;
-    const userBio = bioHandler.getBio(userId); // Retrieve stored bio
     const requiredStatus = "online"; // Change this to your required status
-    const requiredBio = "Verified User"; // Change this to required bio content
 
     const roleToAssign = newPresence.guild.roles.cache.find(r => r.name === "SpecialRole");
 
-    if (newPresence.status === requiredStatus && userBio === requiredBio) {
+    if (newPresence.status === requiredStatus && bioHandler.isBioValid(userId)) {
         await newPresence.member.roles.add(roleToAssign);
         console.log(`✅ Assigned ${roleToAssign.name} to ${newPresence.member.user.tag}`);
     } else {
