@@ -1,6 +1,4 @@
-const bioHandler = require('./bioHandler'); // Bio storage helper
-
-const { Client, GatewayIntentBits } = require('discord.js');
+const bioHandler = require('./bioHandler'); // Bio storage help
 
 const client = new Client({
     intents: [
